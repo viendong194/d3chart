@@ -173,6 +173,7 @@ class App extends Component {
       .startAngle(0)
       .endAngle(2*Math.PI)
       .value(function(d) { return d.total; });
+      console.log(pie)
 
     let svg = d3.select("#type_02").append("svg")
       .attr("width", width)
@@ -196,6 +197,12 @@ class App extends Component {
             return arc(d)
             }
           }); 
+          g.append("text")
+          .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+          .attr("dy", ".35em")
+          .transition()
+          .delay(1000)
+            .text(function(d) { return d.data.name; });  
     }
    
   render() {
