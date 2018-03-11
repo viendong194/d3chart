@@ -11,16 +11,25 @@ class App extends Component {
       {year:15,line:4.5,bar:928628},
       {year:16,line:2.2,bar:974127},
       {year:17,line:0.8,bar:975974}
+    ];
+    this.data02 = [
+      { name: '住宅部門', total: 3297, percent: 56.4 },
+      { name: '賃貸部門', total: 1150, percent: 19.7 },
+      { name: '資産運用部門', total: 96, percent: 1.7 },
+      { name: '仲介・CRE部門', total: 348, percent: 6.0 },
+      { name: '運営管理部門', total: 957, percent: 16.4 },
+      { name: 'その他部門', total: 1, percent: 0.02 }
     ]
   }
   componentDidMount(){
     this.createGraph('type_01');
+    this.createGraph('type_02');
   }
   createGraph = (type) => {
     switch(type){
       case 'type_01' : this.graph01(type);
       break;
-      case 'type_02' : this.graph02(); 
+      case 'type_02' : this.graph02(type); 
       break;
       default : return;
     }
@@ -94,6 +103,7 @@ class App extends Component {
             .attr("stroke-dashoffset", totalLength)
             .transition()
               .duration(2000)
+              .delay(2000)
               // .ease("linear")
               .attr("stroke-dashoffset", 0);
 
@@ -119,7 +129,7 @@ class App extends Component {
             return "translate(-2.5 -2.5) rotate(45,"+cx+","+cy+")"})
             .transition()
             .delay(function(d,i){
-              return i*500
+              return i==0?2000:i*500+2000
             })
             .duration(1000)
             .style("opacity","1");
@@ -144,14 +154,57 @@ class App extends Component {
         .select(".domain").remove();
   }
   graph02 = (type) =>{
-    var container = document.getElementById(type);
-    console.log("it's worked");
-  }
+    console.log("it's worked 2222");
+    let data02 = this.data02;
+    let container = document.getElementById(type);
+    container.style.width = "800px";
+    container.style.height = "500px";
+    let width = container.clientHeight*0.66,
+    height = container.clientHeight*0.66,
+    radius = Math.min(width, height) / 2;
+
+    let color = d3.scaleOrdinal()
+      .range(["#a38dc1", "#f5c233", "#9dcc66", "#6c8ee0", "#f08f97","#cfc9d5"]);
+    let arc = d3.arc()
+      .outerRadius(radius)
+      .innerRadius(radius - 75);
+    let pie = d3.pie()
+      .sort(null)
+      .startAngle(0)
+      .endAngle(2*Math.PI)
+      .value(function(d) { return d.total; });
+
+    let svg = d3.select("#type_02").append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("transform", "translate(" + width + "," + 0 + ")")
+      .append("g")
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+  
+    let g = svg.selectAll(".arc")
+        .data(pie(data02))
+        .enter().append("g")
+        .attr("class", "arc");
+        g.append("path")
+        .style("fill", function(d) { return color(d.data.total); })
+          .transition().delay(function(d,i) {
+        return i * 500; }).duration(500)
+        .attrTween('d', function(d) {
+          let i = d3.interpolate(d.startAngle+0.1, d.endAngle);
+          return function(t) {
+            d.endAngle = i(t); 
+            return arc(d)
+            }
+          }); 
+    }
+   
   render() {
     return (
       <div className="App">
         <h2>Bar chart use D3.js</h2>
         <div id="type_01">
+        </div>
+        <div id="type_02">
         </div>
       </div>
     );
